@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lovelace Inventory Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #eef4f7;
+      color: #1f2933;
+    }
+
+    header {
+      background: linear-gradient(135deg, #006d77, #0a9396);
+      color: white;
+      padding: 28px 15px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 25px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: auto;
+      padding: 15px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+
+    .stat-card h2 {
+      margin: 0;
+      color: #006d77;
+    }
+
+    .stat-card p {
+      margin: 5px 0 0;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .card {
+      background: white;
+      padding: 18px;
+      border-radius: 15px;
+      margin-top: 18px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 1px solid #cfd8dc;
+      font-size: 16px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 75px;
+    }
+
+    button {
+      border: none;
+      background: #0a9396;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00777a;
+    }
+
+    .clear-btn {
+      background: #6b7280;
+    }
+
+    .delete-btn {
+      background: #c1121f;
+    }
+
+    .edit-btn {
+      background: #005f73;
+    }
+
+    .item {
+      background: white;
+      padding: 15px;
+      border-radius: 14px;
+      margin-top: 12px;
+      border-left: 5px solid #0a9396;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+    }
+
+    .item h3 {
+      margin: 0;
+      color: #005f73;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #e0fbfc;
+      color: #005f73;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin: 8px 4px 5px 0;
+      font-weight: bold;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .status {
+      text-align: center;
+      font-weight: bold;
+      color: #006d77;
+      margin-top: 10px;
+    }
+
+    footer {
+      text-align: center;
+      color: #777;
+      padding: 20px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .row, .actions {
+        grid-template-columns: 1fr;
+      }
+
+      header h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Lovelace Inventory Tracker</h1>
+  <p>Medicine & Medical Supply Location System</p>
+</header>
+
+<div class="container">
+
+  <div class="stats">
+    <div class="stat-card">
+      <h2 id="totalItems">0</h2>
+      <p>Total Items</p>
+    </div>
+
+    <div class="stat-card">
+      <h2 id="totalCategories">0</h2>
+      <p>Categories</p>
+    </div>
+
+    <div class="stat-card">
+      <h2 id="lowStock">0</h2>
+      <p>Low Stock</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 id="formTitle">Add New Item</h2>
+
+    <input type="hidden" id="editId">
+
+    <input id="name" placeholder="Medicine or supply name">
+
+    <div class="row">
+      <select id="category">
+        <option value="">Select category</option>
+        <option>Medicine</option>
+        <option>IV Supplies</option>
+        <option>PPE</option>
+        <option>Gloves</option>
+        <option>Bandages</option>
+        <option>Syringes</option>
+        <option>Other</option>
+      </select>
+
+      <input id="quantity" type="number" placeholder="Quantity">
+    </div>
+
+    <input id="location" placeholder="Shelf, bin, room, or location">
+
+    <textarea id="notes" placeholder="Description or notes"></textarea>
+
+    <button onclick="saveItem()" id="saveBtn">Save Item</button>
+    <button onclick="clearForm()" class="clear-btn">Clear Form</button>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>Search Inventory</h2>
+    <input id="searchBox" onkeyup="searchItems()" placeholder="Search name, code, category, location, or notes">
+  </div>
+
+  <div id="results"></div>
+
+</div>
+
+<footer>
+  Practice inventory project for Materials Tech interview
+</footer>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxqAjvhR6dtFlrfVd4ylUwsxTQavpvTiNb3-HpIK5Rfe_qhMCUC75JTPyZ6oz5XFu8i/exec";
+
+  let allItems = [];
+
+  async function saveItem() {
+    const id = document.getElementById("editId").value;
+    const name = document.getElementById("name").value.trim();
+    const category = document.getElementById("category").value;
+    const location = document.getElementById("location").value.trim();
+    const quantity = document.getElementById("quantity").value.trim();
+    const notes = document.getElementById("notes").value.trim();
+    const status = document.getElementById("status");
+
+    if (!name || !category || !location || !quantity) {
+      status.textContent = "Please fill name, category, location, and quantity.";
+      return;
+    }
+
+    status.textContent = "Saving...";
+
+    try {
+      if (id) {
+        const url =
+          API_URL +
+          "?action=update&id=" + encodeURIComponent(id) +
+          "&name=" + encodeURIComponent(name) +
+          "&category=" + encodeURIComponent(category) +
+          "&location=" + encodeURIComponent(location) +
+          "&quantity=" + encodeURIComponent(quantity) +
+          "&notes=" + encodeURIComponent(notes);
+
+        await fetch(url);
+        status.textContent = "Item updated successfully.";
+      } else {
+        await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            name,
+            category,
+            location,
+            quantity,
+            notes
+          })
+        });
+
+        status.textContent = "Item saved successfully.";
+      }
+
+      clearForm();
+      await loadItems();
+
+    } catch (error) {
+      status.textContent = "Error saving item.";
+    }
+  }
+
+  async function loadItems() {
+    try {
+      const response = await fetch(API_URL + "?action=read");
+      allItems = await response.json();
+
+      displayItems(allItems);
+      updateStats();
+
+    } catch (error) {
+      document.getElementById("results").innerHTML =
+        "<p>Error loading data. Check Web App URL and deployment.</p>";
+    }
+  }
+
+  function displayItems(items) {
+    const results = document.getElementById("results");
+
+    if (!items || items.length === 0) {
+      results.innerHTML = "<p>No items found.</p>";
+      return;
+    }
+
+    results.innerHTML = items.map(item => `
+      <div class="item">
+        <h3>${escapeText(item.name)}</h3>
+
+        <span class="badge">${escapeText(item.code)}</span>
+        <span class="badge">${escapeText(item.category)}</span>
+        <span class="badge">Qty: ${escapeText(item.quantity)}</span>
+
+        <p><b>Location:</b> ${escapeText(item.location)}</p>
+        <p><b>Notes:</b> ${escapeText(item.notes || "No notes")}</p>
+        <p class="small"><b>Date Added:</b> ${escapeText(item.date)}</p>
+
+        <div class="actions">
+          <button class="edit-btn" onclick="editItem('${item.id}')">Edit</button>
+          <button class="delete-btn" onclick="deleteItem('${item.id}')">Delete</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function searchItems() {
+    const text = document.getElementById("searchBox").value.toLowerCase();
+
+    const filtered = allItems.filter(item =>
+      String(item.code).toLowerCase().includes(text) ||
+      String(item.name).toLowerCase().includes(text) ||
+      String(item.category).toLowerCase().includes(text) ||
+      String(item.location).toLowerCase().includes(text) ||
+      String(item.notes).toLowerCase().includes(text)
+    );
+
+    displayItems(filtered);
+  }
+
+  function editItem(id) {
+    const item = allItems.find(x => String(x.id) === String(id));
+    if (!item) return;
+
+    document.getElementById("editId").value = item.id;
+    document.getElementById("name").value = item.name;
+    document.getElementById("category").value = item.category;
+    document.getElementById("quantity").value = item.quantity;
+    document.getElementById("location").value = item.location;
+    document.getElementById("notes").value = item.notes;
+
+    document.getElementById("formTitle").textContent = "Edit Item";
+    document.getElementById("saveBtn").textContent = "Update Item";
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function deleteItem(id) {
+    if (!confirm("Delete this item from Google Sheet?")) return;
+
+    try {
+      await fetch(API_URL + "?action=delete&id=" + encodeURIComponent(id));
+      await loadItems();
+    } catch (error) {
+      alert("Error deleting item.");
+    }
+  }
+
+  function clearForm() {
+    document.getElementById("editId").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("quantity").value = "";
+    document.getElementById("location").value = "";
+    document.getElementById("notes").value = "";
+    document.getElementById("formTitle").textContent = "Add New Item";
+    document.getElementById("saveBtn").textContent = "Save Item";
+  }
+
+  function updateStats() {
+    document.getElementById("totalItems").textContent = allItems.length;
+
+    const categories = new Set(allItems.map(item => item.category));
+    document.getElementById("totalCategories").textContent = categories.size;
+
+    const lowStockItems = allItems.filter(item => Number(item.quantity) <= 5);
+    document.getElementById("lowStock").textContent = lowStockItems.length;
+  }
+
+  function escapeText(text) {
+    return String(text || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  loadItems();
+</script>
+
+</body>
+</html>
